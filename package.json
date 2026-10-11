@@ -1,0 +1,11 @@
+{
+  "name": "shopease",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "concurrently --kill-others --names API,WEB --prefix-colors blue,green \"npm --prefix server start\" \"npm --prefix client run web\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

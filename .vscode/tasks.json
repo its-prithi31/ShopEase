@@ -1,0 +1,61 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ShopEase: Start Full Stack (Backend + Web)",
+      "type": "shell",
+      "command": "npm start",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      }
+    },
+    {
+      "label": "ShopEase: Start Backend Server",
+      "type": "shell",
+      "command": "npm --prefix server start",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "ShopEase: Start Web Client (Expo)",
+      "type": "shell",
+      "command": "npm --prefix client run web",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "ShopEase: Seed Database",
+      "type": "shell",
+      "command": "npm --prefix server run seed",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "ShopEase: Run Full-Stack Tests",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File ./verify-fullstack.ps1",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

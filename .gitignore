@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+
+# Testing and cache
+.cache/
+**/.cache/
+coverage/
+
+# Production builds
+dist/
+build/
+web-build/
+
+# Expo
+.expo/
+**/.expo/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro & Logs
+.metro-health-check*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env*.local
+*.env
+**/.env
+!*.env.example
+!**/.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+*.pem
+
+# Editor & IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/

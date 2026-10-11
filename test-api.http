@@ -1,0 +1,142 @@
+### ============================================================
+### ShopEase Full-Stack E-Commerce API Test Suite
+### Use with VS Code "REST Client" extension
+### ============================================================
+
+@baseUrl = http://localhost:5000/api
+@adminEmail = admin@shopease.com
+@adminPassword = admin123
+@userEmail = user@shopease.com
+@userPassword = user123
+
+### 1. API Health Check / Welcome
+GET http://localhost:5000/
+
+### 2. Customer Login
+# @name customerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+### Save customer token
+@customerToken = {{customerLogin.response.body.token}}
+
+### 3. Admin Login
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Save admin token
+@adminToken = {{adminLogin.response.body.token}}
+
+### 4. Fetch All Products (Default)
+GET {{baseUrl}}/products
+
+### 5. Fetch Products with Search & Category Filter
+GET {{baseUrl}}/products?keyword=phone&category=Electronics
+
+### 6. Fetch Products with Sorting (Price Low to High)
+GET {{baseUrl}}/products?sort=price-asc
+
+### 7. Fetch Products with Sorting (Top Rated)
+GET {{baseUrl}}/products?sort=rating
+
+### 8. Fetch Single Product by ID
+# @name getSingleProduct
+GET {{baseUrl}}/products/prod_sample_001
+
+### 9. Submit a Product Review & Rating (Customer Auth Required)
+POST {{baseUrl}}/products/prod_sample_001/reviews
+Content-Type: application/json
+Authorization: Bearer {{customerToken}}
+
+{
+  "rating": 5,
+  "comment": "Absolutely phenomenal battery life and active noise cancelling! Best purchase of the month."
+}
+
+### 10. Validate Promotional Coupon Code (SHOPEASE10 - 10% Off)
+POST {{baseUrl}}/orders/validate-coupon
+Content-Type: application/json
+
+{
+  "code": "SHOPEASE10",
+  "itemsPrice": 199.99
+}
+
+### 11. Validate Promotional Coupon Code (SAVE20 - $20 Off over $50)
+POST {{baseUrl}}/orders/validate-coupon
+Content-Type: application/json
+
+{
+  "code": "SAVE20",
+  "itemsPrice": 149.99
+}
+
+### 12. Create New Customer Order (with Coupon & Discount)
+# @name createOrder
+POST {{baseUrl}}/orders
+Content-Type: application/json
+Authorization: Bearer {{customerToken}}
+
+{
+  "orderItems": [
+    {
+      "product": "prod_sample_001",
+      "name": "Wireless Noise-Canceling Headphones",
+      "qty": 1,
+      "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+      "price": 199.99
+    }
+  ],
+  "shippingAddress": {
+    "address": "456 Market Street, Suite 200",
+    "city": "San Francisco",
+    "postalCode": "94105",
+    "country": "USA"
+  },
+  "paymentMethod": "Cash on Delivery",
+  "itemsPrice": 199.99,
+  "shippingPrice": 0,
+  "discountAmount": 20,
+  "couponCode": "SAVE20",
+  "totalPrice": 179.99
+}
+
+### Save placed order ID
+@placedOrderId = {{createOrder.response.body._id}}
+
+### 13. View My Order History
+GET {{baseUrl}}/orders/myorders
+Authorization: Bearer {{customerToken}}
+
+### 14. Customer Cancel Pending Order (Restores Inventory Stock)
+PUT {{baseUrl}}/orders/{{placedOrderId}}/cancel
+Authorization: Bearer {{customerToken}}
+
+### 15. Admin View All Store Orders
+GET {{baseUrl}}/orders
+Authorization: Bearer {{adminToken}}
+
+### 16. Admin Create New Product
+POST {{baseUrl}}/products
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Ultra-Wide Curved Gaming Monitor 34\"",
+  "price": 499.99,
+  "description": "Immersive 34-inch 144Hz WQHD curved gaming monitor with HDR400 and USB-C hub connectivity.",
+  "category": "Electronics",
+  "image": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&q=80",
+  "countInStock": 8
+}

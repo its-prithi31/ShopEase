@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "msjsdiag.vscode-react-native",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "humao.rest-client",
+    "mongodb.mongodb-vscode"
+  ]
+}
