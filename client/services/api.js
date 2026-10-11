@@ -8,10 +8,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * - Android Emulator: http://10.0.2.2:5000/api (special loopback alias)
  * - Physical Device (Expo Go): Replace with your computer's local IP (e.g., http://10.66.106.119:5000/api)
  */
-const DEFAULT_URL = Platform.select({
+const getWebBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    return `${window.location.origin}/api`;
+  }
+  return 'http://localhost:5000/api';
+};
+
+const DEFAULT_URL = process.env.EXPO_PUBLIC_API_URL || Platform.select({
   android: 'http://10.0.2.2:5000/api',
   ios: 'http://localhost:5000/api',
-  default: 'http://localhost:5000/api', // Web and desktop
+  web: getWebBaseUrl(),
+  default: 'http://localhost:5000/api',
 });
 
 export const BASE_API_URL = DEFAULT_URL;

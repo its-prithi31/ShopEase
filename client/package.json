@@ -20,10 +20,10 @@
   },
   "scripts": {
     "start": "expo start",
+    "build": "expo export -p web",
     "web": "expo start --web",
     "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "ios": "expo start --ios"
   },
   "private": true
 }

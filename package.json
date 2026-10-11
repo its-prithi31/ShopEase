@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "concurrently --kill-others --names API,WEB --prefix-colors blue,green \"npm --prefix server start\" \"npm --prefix client run web\""
+    "start": "node server/server.js",
+    "server": "npm --prefix server start",
+    "client": "npm --prefix client start",
+    "dev": "concurrently --kill-others --names API,WEB --prefix-colors blue,green \"npm --prefix server start\" \"npm --prefix client run web\"",
+    "build": "npm --prefix client install && npm --prefix client run build && npm --prefix server install",
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install"
   },
-  "devDependencies": {
+  "dependencies": {
     "concurrently": "^9.2.1"
   }
 }
