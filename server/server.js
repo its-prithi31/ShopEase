@@ -9,8 +9,14 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
-// Load environment variables from .env
+// Load environment variables from server/.env and root .env
+dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config();
+
+// Fallback JWT secret for instant zero-config deployment / local execution
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'shopease_default_jwt_secret_dev_key_2026';
+}
 
 // Connect to MongoDB
 connectDB();
