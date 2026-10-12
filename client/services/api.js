@@ -10,6 +10,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  */
 const getWebBaseUrl = () => {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    if (window.location.hostname.includes('netlify.app')) {
+      return `${window.location.origin}/.netlify/functions/api`;
+    }
     return `${window.location.origin}/api`;
   }
   return 'http://localhost:5000/api';
@@ -49,9 +52,15 @@ api.interceptors.request.use(
       console.warn('Error reading token from AsyncStorage:', error);
     }
 
-    // Strip leading slash if url starts with '/' so Axios does not discard the baseURL subpath (e.g., /api)
-    if (config.url && config.url.startsWith('/') && !config.url.startsWith('/api') && !config.url.startsWith('/.netlify')) {
-      config.url = config.url.replace(/^\/+/, '');
+    // Ensure clean relative URL joining so Axios appends cleanly to baseURL
+    if (config.url) {
+      if (config.url.startsWith('/api/')) {
+        config.url = config.url.replace(/^\/api\//, '');
+      } else if (config.url.startsWith('/.netlify/functions/api/')) {
+        config.url = config.url.replace(/^\/\.netlify\/functions\/api\//, '');
+      } else if (config.url.startsWith('/')) {
+        config.url = config.url.replace(/^\/+/, '');
+      }
     }
 
     return config;
@@ -76,11 +85,15 @@ api.interceptors.response.use(
       typeof window !== 'undefined' &&
       originalRequest &&
       !originalRequest._retry &&
-      (!error.response || error.response.status === 404) &&
-      !originalRequest.baseURL?.includes('/.netlify/functions')
+      (!error.response || error.response.status === 404 || error.response.status === 502)
     ) {
       originalRequest._retry = true;
-      originalRequest.baseURL = `${window.location.origin}/.netlify/functions/api`;
+      // Toggle between direct function path and /api path
+      if (!originalRequest.baseURL?.includes('/.netlify/functions')) {
+        originalRequest.baseURL = `${window.location.origin}/.netlify/functions/api`;
+      } else {
+        originalRequest.baseURL = `${window.location.origin}/api`;
+      }
       try {
         return await api(originalRequest);
       } catch (retryError) {

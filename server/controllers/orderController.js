@@ -118,15 +118,17 @@ const createOrder = async (req, res) => {
     // If connected to MongoDB
     if (mongoose.connection.readyState === 1) {
       for (const item of orderItems) {
-        const product = await Product.findById(item.product);
-        if (product) {
-          if (product.countInStock < item.qty) {
-            return res.status(400).json({
-              message: `Not enough stock available for ${product.name}. Available: ${product.countInStock}`,
-            });
+        if (mongoose.isValidObjectId(item.product)) {
+          const product = await Product.findById(item.product);
+          if (product) {
+            if (product.countInStock < item.qty) {
+              return res.status(400).json({
+                message: `Not enough stock available for ${product.name}. Available: ${product.countInStock}`,
+              });
+            }
+            product.countInStock = Math.max(0, product.countInStock - item.qty);
+            await product.save();
           }
-          product.countInStock = Math.max(0, product.countInStock - item.qty);
-          await product.save();
         }
       }
 
@@ -200,34 +202,34 @@ const cancelOrder = async (req, res) => {
     const userId = req.user._id.toString();
 
     // MongoDB connection active
-    if (mongoose.connection.readyState === 1) {
+    if (mongoose.connection.readyState === 1 && mongoose.isValidObjectId(orderId)) {
       const order = await Order.findById(orderId);
-      if (!order) {
-        return res.status(404).json({ message: 'Order not found' });
-      }
-
-      if (order.user.toString() !== userId && !req.user.isAdmin) {
-        return res.status(403).json({ message: 'Not authorized to cancel this order' });
-      }
-
-      if (order.status !== 'Pending') {
-        return res.status(400).json({
-          message: `Cannot cancel order with status '${order.status}'. Only 'Pending' orders can be cancelled.`,
-        });
-      }
-
-      // Restore stock
-      for (const item of order.orderItems) {
-        const product = await Product.findById(item.product);
-        if (product) {
-          product.countInStock += item.qty;
-          await product.save();
+      if (order) {
+        if (order.user.toString() !== userId && !req.user.isAdmin) {
+          return res.status(403).json({ message: 'Not authorized to cancel this order' });
         }
-      }
 
-      order.status = 'Cancelled';
-      const updatedOrder = await order.save();
-      return res.json({ message: 'Order cancelled successfully and stock restored', order: updatedOrder });
+        if (order.status !== 'Pending') {
+          return res.status(400).json({
+            message: `Cannot cancel order with status '${order.status}'. Only 'Pending' orders can be cancelled.`,
+          });
+        }
+
+        // Restore stock
+        for (const item of order.orderItems) {
+          if (mongoose.isValidObjectId(item.product)) {
+            const product = await Product.findById(item.product);
+            if (product) {
+              product.countInStock += item.qty;
+              await product.save();
+            }
+          }
+        }
+
+        order.status = 'Cancelled';
+        const updatedOrder = await order.save();
+        return res.json({ message: 'Order cancelled successfully and stock restored', order: updatedOrder });
+      }
     }
 
     // In-memory fallback
@@ -293,14 +295,14 @@ const getMyOrders = async (req, res) => {
  */
 const getOrderById = async (req, res) => {
   try {
-    if (mongoose.connection.readyState === 1) {
+    if (mongoose.connection.readyState === 1 && mongoose.isValidObjectId(req.params.id)) {
       const order = await Order.findById(req.params.id).populate('user', 'name email');
-      if (!order) return res.status(404).json({ message: 'Order not found' });
-
-      if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-        return res.status(403).json({ message: 'Not authorized to view this order' });
+      if (order) {
+        if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+          return res.status(403).json({ message: 'Not authorized to view this order' });
+        }
+        return res.json(order);
       }
-      return res.json(order);
     }
 
     const order = inMemoryStore.orders.find(

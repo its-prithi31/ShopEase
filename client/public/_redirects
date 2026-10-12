@@ -1,1 +1,6 @@
-/*    /index.html   200
+/api/*          /.netlify/functions/api/:splat       200!
+/api            /.netlify/functions/api             200!
+/products*      /.netlify/functions/api/products:splat  200!
+/auth*          /.netlify/functions/api/auth:splat      200!
+/orders*        /.netlify/functions/api/orders:splat    200!
+/*              /index.html                         200

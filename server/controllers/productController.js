@@ -12,6 +12,17 @@ const getProducts = async (req, res) => {
     const { keyword, category, sort } = req.query;
 
     if (mongoose.connection.readyState === 1) {
+      // Auto-seed if database collection is empty so remote deployments (like MongoDB Atlas) have products immediately
+      try {
+        const totalCount = await Product.countDocuments();
+        if (totalCount === 0) {
+          const sampleProducts = require('../data/sampleProducts');
+          await Product.insertMany(sampleProducts);
+        }
+      } catch (seedErr) {
+        console.warn('Auto-seed products note:', seedErr.message);
+      }
+
       const queryFilter = {};
       if (keyword) {
         queryFilter.name = { $regex: keyword.trim(), $options: 'i' };
@@ -27,7 +38,10 @@ const getProducts = async (req, res) => {
       else if (sort === 'newest') sortOptions = { createdAt: -1 };
 
       const products = await Product.find(queryFilter).sort(sortOptions);
-      return res.json(products);
+      if (products.length > 0 || keyword || (category && category !== 'All')) {
+        return res.json(products);
+      }
+      return res.json(inMemoryStore.products);
     }
 
     // In-memory fallback
@@ -70,9 +84,12 @@ const getProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
-      const product = await Product.findById(req.params.id);
-      if (product) return res.json(product);
-      return res.status(404).json({ message: 'Product not found' });
+      try {
+        const product = await Product.findById(req.params.id);
+        if (product) return res.json(product);
+      } catch (castErr) {
+        // If ID is not an ObjectId (e.g. prod_sample_001), fallback to in-memory lookup
+      }
     }
 
     const product = inMemoryStore.products.find(

@@ -18,9 +18,15 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      if (mongoose.connection.readyState === 1) {
-        req.user = await User.findById(decoded.id).select('-password');
-      } else {
+      if (mongoose.connection.readyState === 1 && mongoose.isValidObjectId(decoded.id)) {
+        try {
+          req.user = await User.findById(decoded.id).select('-password');
+        } catch (dbErr) {
+          console.warn('DB user lookup error:', dbErr.message);
+        }
+      }
+
+      if (!req.user) {
         const found = inMemoryStore.users.find(
           (u) => u._id.toString() === decoded.id.toString()
         );
