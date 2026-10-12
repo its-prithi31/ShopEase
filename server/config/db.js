@@ -6,9 +6,19 @@ const mongoose = require('mongoose');
  * so the application can be tested immediately out of the box.
  */
 const connectDB = async () => {
+  const isServerless = Boolean(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  const mongoUri = process.env.MONGO_URI;
+
+  // In serverless without Atlas URI, immediately activate in-memory mode without delay
+  if (isServerless && (!mongoUri || mongoUri.includes('127.0.0.1') || mongoUri.includes('localhost'))) {
+    mongoose.set('bufferCommands', false);
+    console.log(`⚡ Serverless Mode: Seamless In-Memory Database Mode is ACTIVE with preloaded sample products & demo accounts!`);
+    return false;
+  }
+
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/shopease';
-    const conn = await mongoose.connect(mongoUri, {
+    const targetUri = mongoUri || 'mongodb://127.0.0.1:27017/shopease';
+    const conn = await mongoose.connect(targetUri, {
       serverSelectionTimeoutMS: 2000, // Fast 2s timeout for immediate fallback
     });
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
