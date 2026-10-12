@@ -25,6 +25,24 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/products*"
+  to = "/.netlify/functions/api/products:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/orders*"
+  to = "/.netlify/functions/api/orders:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/auth*"
+  to = "/.netlify/functions/api/auth:splat"
+  status = 200
+  force = true
+
 # Single Page Application (SPA) fallback for Expo Web navigation
 [[redirects]]
   from = "/*"

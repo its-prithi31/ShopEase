@@ -48,21 +48,35 @@ api.interceptors.request.use(
     } catch (error) {
       console.warn('Error reading token from AsyncStorage:', error);
     }
+
+    // Strip leading slash if url starts with '/' so Axios does not discard the baseURL subpath (e.g., /api)
+    if (config.url && config.url.startsWith('/') && !config.url.startsWith('/api') && !config.url.startsWith('/.netlify')) {
+      config.url = config.url.replace(/^\/+/, '');
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Standardize error format and auto-fallback to direct Netlify Functions if /api 404s
+// Response Interceptor: Standardize error format and auto-fallback to direct Netlify Functions
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Safety guard: if an SPA route returns the HTML index.html instead of JSON data
+    if (typeof response.data === 'string' && response.data.trim().startsWith('<!DOCTYPE')) {
+      const err = new Error('API returned HTML page instead of JSON');
+      err.response = { status: 404, data: { message: 'API returned HTML page instead of JSON' } };
+      throw err;
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     if (
       typeof window !== 'undefined' &&
       originalRequest &&
       !originalRequest._retry &&
-      error.response?.status === 404 &&
+      (!error.response || error.response.status === 404) &&
       !originalRequest.baseURL?.includes('/.netlify/functions')
     ) {
       originalRequest._retry = true;

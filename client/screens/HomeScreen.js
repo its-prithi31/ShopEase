@@ -48,7 +48,11 @@ const HomeScreen = ({ navigation }) => {
         category: selectedCategory,
         sort: selectedSort,
       });
-      setProducts(data);
+      if (Array.isArray(data)) {
+        setProducts(data);
+      } else {
+        setProducts([]);
+      }
     } catch (error) {
       console.error('Fetch products error:', error);
       Alert.alert('Error', error.message || 'Unable to load products from server');

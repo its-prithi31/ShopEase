@@ -13,10 +13,11 @@ import { WishlistContext } from '../context/WishlistContext';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
 
-const ProductCard = ({ product, onPress, onAddToCart }) => {
+const ProductCard = ({ product = {}, onPress, onAddToCart }) => {
   const { isInWishlist, toggleWishlist } = useContext(WishlistContext);
-  const isOutOfStock = product.countInStock <= 0;
+  const isOutOfStock = (product.countInStock ?? 0) <= 0;
   const isFavorite = isInWishlist(product._id);
+  const price = typeof product.price === 'number' ? product.price : (parseFloat(product.price) || 0);
 
   const handleFavoritePress = (e) => {
     e.stopPropagation?.();
@@ -32,7 +33,7 @@ const ProductCard = ({ product, onPress, onAddToCart }) => {
       {/* Product Image */}
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: product.image }}
+          source={{ uri: product.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80' }}
           style={styles.image}
           resizeMode="cover"
         />
@@ -42,7 +43,7 @@ const ProductCard = ({ product, onPress, onAddToCart }) => {
           </View>
         )}
         <View style={styles.categoryBadge}>
-          <Text style={styles.categoryBadgeText}>{product.category}</Text>
+          <Text style={styles.categoryBadgeText}>{product.category || 'ShopEase'}</Text>
         </View>
 
         {/* Wishlist Heart Button */}
@@ -62,7 +63,7 @@ const ProductCard = ({ product, onPress, onAddToCart }) => {
       {/* Product Details */}
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={2}>
-          {product.name}
+          {product.name || 'Featured Product'}
         </Text>
 
         <View style={styles.ratingRow}>
@@ -74,7 +75,7 @@ const ProductCard = ({ product, onPress, onAddToCart }) => {
         <View style={styles.bottomRow}>
           <View>
             <Text style={styles.priceLabel}>Price</Text>
-            <Text style={styles.price}>${Number(product.price).toFixed(2)}</Text>
+            <Text style={styles.price}>${price.toFixed(2)}</Text>
           </View>
 
           <TouchableOpacity
