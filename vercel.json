@@ -1,20 +1,19 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "builds": [
+  "outputDirectory": "client/dist",
+  "rewrites": [
     {
-      "src": "server/server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server/server.js"
+      "source": "/api/(.*)",
+      "destination": "/api"
     },
     {
-      "src": "/(.*)",
-      "dest": "server/server.js"
+      "source": "/api",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!api|_expo|assets|favicon.ico).*)",
+      "destination": "/index.html"
     }
   ]
 }

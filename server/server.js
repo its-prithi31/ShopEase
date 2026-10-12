@@ -76,6 +76,11 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 ShopEase Server running on http://localhost:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-});
+// Only start listener if not running in serverless environment (e.g., Vercel) or tests
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 ShopEase Server running on http://localhost:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  });
+}
+
+module.exports = app;
