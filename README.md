@@ -283,3 +283,50 @@ When explaining this project in an engineering interview, use these key talking 
 ### 4. How did you handle mobile network connectivity (localhost vs emulator vs device)?
 - A common mobile development pitfall is that `localhost` on an Android emulator refers to the emulator itself, not the host machine.
 - In `services/api.js`, `Platform.select()` maps Android to `10.0.2.2:5000` and iOS/Web to `localhost:5000`. Furthermore, a dynamic network settings modal in `ProfileScreen` allows testers on physical Wi-Fi devices to configure their host PC's IP address dynamically.
+
+---
+
+## 🚀 Production Deployment Guide
+
+ShopEase supports three deployment targets directly from the GitHub repository:
+
+### Option 1: Render (Recommended for Full-Stack)
+Render hosts both the **Express REST API** and the compiled **Expo Web App** as a single unified service:
+
+1. Log in to [Render](https://render.com) and click **New ➔ Blueprint** (or **New Web Service**).
+2. Connect your GitHub repository (`ShopEase`).
+3. If using **Blueprint**, Render automatically reads [`render.yaml`](file:///c:/Users/rprit/.gemini/antigravity/scratch/shopease/render.yaml).
+4. If creating a manual **Web Service**:
+   - **Environment**: Node
+   - **Build Command**: `npm run build`
+   - **Start Command**: `npm start`
+   - **Environment Variables**:
+     - `NODE_ENV`: `production`
+     - `PORT`: `10000`
+     - `JWT_SECRET`: (Any secure random string)
+     - `MONGO_URI`: (Optional MongoDB Atlas connection string; if omitted, in-memory store activates seamlessly)
+5. Click **Deploy**. Your app will be live at `https://<your-app>.onrender.com`.
+
+---
+
+### Option 2: Vercel (Static Frontend + Serverless API)
+1. Import your GitHub repository into [Vercel](https://vercel.com).
+2. Vercel automatically detects [`vercel.json`](file:///c:/Users/rprit/.gemini/antigravity/scratch/shopease/vercel.json).
+3. Build Settings:
+   - **Framework Preset**: Other
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `client/dist`
+4. Set Environment Variables:
+   - `JWT_SECRET`: (Your secret)
+   - `MONGO_URI`: (MongoDB Atlas URI)
+5. Click **Deploy**.
+
+---
+
+### Option 3: GitHub Pages (Static Web UI)
+1. Go to your GitHub repository: `https://github.com/its-prithi31/ShopEase`
+2. Navigate to **Settings ➔ Pages**.
+3. Under **Build and deployment ➔ Source**, select **GitHub Actions** (NOT "Deploy from a branch").
+4. Under **Actions ➔ General ➔ Workflow permissions**, ensure **Read and write permissions** is selected.
+5. Push a commit or trigger the workflow under **Actions ➔ Deploy ShopEase Web to GitHub Pages ➔ Run workflow**.
+6. The web frontend will be published at: `https://its-prithi31.github.io/ShopEase/`.
