@@ -21,19 +21,29 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const showAlert = (title, message) => {
+    setErrorMessage(message);
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+      window.alert(`${title}: ${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
 
   const handleLogin = async () => {
+    setErrorMessage('');
     if (!email.trim() || !password) {
-      Alert.alert('Validation Error', 'Please enter both email and password.');
+      showAlert('Validation Error', 'Please enter both email and password.');
       return;
     }
 
     try {
       setLoading(true);
       await login(email.trim(), password);
-      // Navigation will automatically update based on auth state
     } catch (error) {
-      Alert.alert('Login Failed', error.message || 'Invalid email or password');
+      showAlert('Login Failed', error.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
@@ -41,6 +51,7 @@ const LoginScreen = ({ navigation }) => {
 
   // Quick fill buttons for testing/interview demo convenience
   const fillDemoUser = (demoEmail, demoPass) => {
+    setErrorMessage('');
     setEmail(demoEmail);
     setPassword(demoPass);
   };
@@ -101,6 +112,13 @@ const LoginScreen = ({ navigation }) => {
               />
             </TouchableOpacity>
           </View>
+
+          {errorMessage ? (
+            <View style={styles.errorBanner}>
+              <Ionicons name="alert-circle" size={18} color="#DC2626" style={{ marginRight: 8 }} />
+              <Text style={styles.errorBannerText}>{errorMessage}</Text>
+            </View>
+          ) : null}
 
           <TouchableOpacity
             style={[styles.submitButton, loading && styles.submitButtonDisabled]}
@@ -291,6 +309,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#2563EB',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 16,
+  },
+  errorBannerText: {
+    color: '#DC2626',
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
   },
 });
 

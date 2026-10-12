@@ -54,14 +54,32 @@ apiRouter.use('/auth', authRoutes);
 apiRouter.use('/products', productRoutes);
 apiRouter.use('/orders', orderRoutes);
 
-// Mount on standard /api as well as Netlify serverless function path
+// Safe body parser for serverless environments where body might be a string
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === 'string') {
+    try {
+      req.body = JSON.parse(req.body);
+    } catch (e) {}
+  }
+  next();
+});
+
+// Mount on standard /api as well as Netlify serverless function paths
 app.use('/api', apiRouter);
 app.use('/.netlify/functions/api', apiRouter);
+app.use('/.netlify/functions', apiRouter);
+app.use(apiRouter);
 
 // Single Page Application (SPA) fallback:
-// Any GET request not matching /api returns the Web client index.html (or API status if no web build exists)
+// Any GET request not matching API endpoints returns the Web client index.html (or API status if no web build exists)
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/.netlify/functions')) {
+  if (
+    req.path.startsWith('/api') ||
+    req.path.startsWith('/.netlify/functions') ||
+    req.path.startsWith('/auth') ||
+    req.path.startsWith('/products') ||
+    req.path.startsWith('/orders')
+  ) {
     return next();
   }
   const indexPath = path.join(clientDistPath, 'index.html');

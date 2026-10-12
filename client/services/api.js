@@ -53,10 +53,27 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Standardize error format
+// Response Interceptor: Standardize error format and auto-fallback to direct Netlify Functions if /api 404s
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    if (
+      typeof window !== 'undefined' &&
+      originalRequest &&
+      !originalRequest._retry &&
+      error.response?.status === 404 &&
+      !originalRequest.baseURL?.includes('/.netlify/functions')
+    ) {
+      originalRequest._retry = true;
+      originalRequest.baseURL = `${window.location.origin}/.netlify/functions/api`;
+      try {
+        return await api(originalRequest);
+      } catch (retryError) {
+        error = retryError;
+      }
+    }
+
     const message =
       error.response?.data?.message ||
       error.message ||

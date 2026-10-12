@@ -23,28 +23,39 @@ const SignupScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const showAlert = (title, message) => {
+    setErrorMessage(message);
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.alert) {
+      window.alert(`${title}: ${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
 
   const handleRegister = async () => {
-    // Basic Form Validation
+    setErrorMessage('');
+    // Form Validation
     if (!name.trim()) {
-      Alert.alert('Validation Error', 'Please enter your full name.');
+      showAlert('Validation Error', 'Please enter your full name.');
       return;
     }
     if (!email.trim()) {
-      Alert.alert('Validation Error', 'Please enter your email address.');
+      showAlert('Validation Error', 'Please enter your email address.');
       return;
     }
-    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      Alert.alert('Validation Error', 'Please enter a valid email address.');
+      showAlert('Validation Error', 'Please enter a valid email address.');
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Validation Error', 'Password must be at least 6 characters long.');
+      showAlert('Validation Error', 'Password must be at least 6 characters long.');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Validation Error', 'Passwords do not match.');
+      showAlert('Validation Error', 'Passwords do not match.');
       return;
     }
 
@@ -52,7 +63,7 @@ const SignupScreen = ({ navigation }) => {
       setLoading(true);
       await register(name.trim(), email.trim(), password);
     } catch (error) {
-      Alert.alert('Registration Failed', error.message || 'Unable to register account.');
+      showAlert('Registration Failed', error.message || 'Unable to register account.');
     } finally {
       setLoading(false);
     }
@@ -137,6 +148,13 @@ const SignupScreen = ({ navigation }) => {
               onChangeText={setConfirmPassword}
             />
           </View>
+
+          {errorMessage ? (
+            <View style={styles.errorBanner}>
+              <Ionicons name="alert-circle" size={18} color="#DC2626" style={{ marginRight: 8 }} />
+              <Text style={styles.errorBannerText}>{errorMessage}</Text>
+            </View>
+          ) : null}
 
           <TouchableOpacity
             style={[styles.submitButton, loading && styles.submitButtonDisabled]}
@@ -273,6 +291,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#2563EB',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 16,
+  },
+  errorBannerText: {
+    color: '#DC2626',
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
   },
 });
 
