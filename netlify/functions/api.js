@@ -1,0 +1,5 @@
+// Netlify Serverless Function handler for ShopEase REST API
+const serverless = require('serverless-http');
+const app = require('../../server/server');
+
+module.exports.handler = serverless(app);

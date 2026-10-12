@@ -330,3 +330,18 @@ Render hosts both the **Express REST API** and the compiled **Expo Web App** as 
 4. Under **Actions ➔ General ➔ Workflow permissions**, ensure **Read and write permissions** is selected.
 5. Push a commit or trigger the workflow under **Actions ➔ Deploy ShopEase Web to GitHub Pages ➔ Run workflow**.
 6. The web frontend will be published at: `https://its-prithi31.github.io/ShopEase/`.
+
+---
+
+### Option 4: Netlify (Expo Web + Serverless Functions)
+1. Go to [Netlify](https://app.netlify.com) and click **Add new site ➔ Import an existing project**.
+2. Connect your GitHub repository (`its-prithi31/ShopEase`).
+3. Netlify automatically reads [`netlify.toml`](file:///c:/Users/rprit/.gemini/antigravity/scratch/shopease/netlify.toml):
+   - **Base directory**: *(leave empty)*
+   - **Build command**: `npm run build`
+   - **Publish directory**: `client/dist`
+   - **Functions directory**: `netlify/functions`
+4. In **Site configuration ➔ Environment variables**, add:
+   - `JWT_SECRET`: `shopease_jwt_secure_secret_2026`
+   - `MONGO_URI`: *(Optional: your MongoDB Atlas URI. If omitted, in-memory store activates)*
+5. Click **Deploy site**.

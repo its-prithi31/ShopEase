@@ -34,8 +34,10 @@ if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath));
 }
 
-// Health Check / API Welcome Route
-app.get('/api', (req, res) => {
+// API Router
+const apiRouter = express.Router();
+
+apiRouter.get('/', (req, res) => {
   res.json({
     status: 'online',
     app: 'ShopEase Mobile & Web E-Commerce API',
@@ -48,15 +50,18 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Mount REST API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/products', productRoutes);
+apiRouter.use('/orders', orderRoutes);
+
+// Mount on standard /api as well as Netlify serverless function path
+app.use('/api', apiRouter);
+app.use('/.netlify/functions/api', apiRouter);
 
 // Single Page Application (SPA) fallback:
 // Any GET request not matching /api returns the Web client index.html (or API status if no web build exists)
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) {
+  if (req.path.startsWith('/api') || req.path.startsWith('/.netlify/functions')) {
     return next();
   }
   const indexPath = path.join(clientDistPath, 'index.html');
@@ -82,8 +87,8 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Only start listener if not running in serverless environment (e.g., Vercel) or tests
-if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+// Only start listener if not running in serverless environment (e.g., Vercel, Netlify, AWS Lambda) or tests
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL && !process.env.NETLIFY && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
   app.listen(PORT, () => {
     console.log(`🚀 ShopEase Server running on http://localhost:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   });
